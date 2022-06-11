@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Personne;
 
+use App\Form\PersonneType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -63,29 +64,19 @@ class PersonneController extends AbstractController
 
         return $this->render('personne/detail.html.twig',['personne'=>$personne]);
     }
-
+    //Crée un formulaire
     #[Route('/add', name: 'app_personne')]
     public function addPersonne(ManagerRegistry $doctrine): Response
     {
         $entityManager =  $doctrine->getManager();
-        $personne = new personne();
-        $personne->setFirstname('Luc Ange');
-        $personne->setName('Koffi');
-        $personne->setAge(25);
+        $personne = new Personne();
 
-//        $personne2 = new personne();
-//        $personne2->setFirstname('Martine');
-//        $personne2->setName('Azamati');
-//        $personne2->setAge(19);
-
-        //Ajouter l'operation d'insertion de la personne dans ma transaction
-//        $entityManager->persist($personne);
-        //$entityManager->persist($personne2);
-
-        //Execute la transaction todo
-        $entityManager->flush();
-        return $this->render('personne/detail.html.twig', [
-            'personne' => $personne,
+        $form=$this->createForm(PersonneType::class, $personne );
+        //supprimer un champs d'un formulaire
+        $form->remove('createdAt');
+        $form->remove('updateAt');
+        return $this->render('personne/add-personne.html.twig', [
+            'form'=>$form->createView()
         ]);
     }
     
