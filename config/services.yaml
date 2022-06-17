@@ -11,7 +11,8 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-
+        bind:
+          $replyTo: 'koffilucange@gmail.com'
     # makes classes in src/ available to be used as services
     # this creates a Service per class whose id is the fully-qualified class name
     App\:
@@ -23,3 +24,8 @@ services:
 
     # add more Service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    #injection de paramètre de configuration
+#    App\Service\MailerService:
+#      arguments:
+#        $replyTo: 'koffilucange@gmail.com'

@@ -7,6 +7,7 @@ use App\Entity\Personne;
 use App\Form\PersonneType;
 use App\Service\Helpers;
 use App\Service\MailerService;
+use App\Service\PdfService;
 use App\Service\UploaderService;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
@@ -30,6 +31,12 @@ class PersonneController extends AbstractController
         $repositiry = $doctrine->getRepository(Personne::class);
         $personnes  = $repositiry->findAll();
         return $this->render('personne/index.html.twig',['personnes'=>$personnes]);
+    }
+//Service PDF
+    #[Route('/pdf/{id}',name: 'personne.pdf')]
+    public function generatePdfPersonne(Personne $personne=null, PdfService $pdf){
+        $html= $this->render('personne/detail.html.twig', ['personne' => $personne]);
+        $pdf->showPdfFile($html);
     }
 
     #[Route('/alls/age/{ageMin}/{ageMax}', name: 'personne.list.age')]
