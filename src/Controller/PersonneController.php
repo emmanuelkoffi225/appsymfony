@@ -11,6 +11,7 @@ use App\Service\PdfService;
 use App\Service\UploaderService;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -19,7 +20,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
-#[Route('personne')]
+#[
+    Route('personne'),
+    IsGranted('ROLE_USER')
+    ]
 class PersonneController extends AbstractController
 {
 
@@ -39,7 +43,7 @@ class PersonneController extends AbstractController
         $pdf->showPdfFile($html);
     }
 
-    #[Route('/alls/age/{ageMin}/{ageMax}', name: 'personne.list.age')]
+    #[Route('/alls/age/{ageMin}/{ageMax}', name: 'personne.list.age') ]
     public function personnesByAge(ManagerRegistry $doctrine ,$ageMin,$ageMax):response{
         $repositiry = $doctrine->getRepository(Personne::class);
         $personnes  = $repositiry->findPersonnesByAgeInterval($ageMin,$ageMax);
@@ -57,9 +61,12 @@ class PersonneController extends AbstractController
         ]);
     }
 
-    #[Route('/alls/{page?1}/{nbre?12}', name: 'personne.list.alls')]
+    #[
+        Route('/alls/{page?1}/{nbre?12}', name: 'personne.list.alls')
+    ]
     public function indexalls(ManagerRegistry $doctrine , $page , $nbre):response{
 //        echo $this->helpers->saycc();
+        $this->denyAccessUnlessGranted("ROLE_USER");
         $repositiry = $doctrine->getRepository(Personne::class);
         $nbPersonne = $repositiry->count([]);
         $nbrePage =  ceil($nbPersonne / $nbre);
@@ -93,6 +100,7 @@ class PersonneController extends AbstractController
         MailerService $mailer
     ): Response
     {
+        $this->denyAccessUnlessGranted("ROLE_ADMIN");
         $new=false;
         if (!$personne){
             $new=true;
@@ -122,17 +130,19 @@ class PersonneController extends AbstractController
                 $personne->setImage($uploaderService->uploadFile($photo,$directory));
             }
 
+            if ($new){
+                $message="a été ajouté avec succès";
+                $personne->setCreatedBy($this->getUser());
+            }else{
+                $message="a été mis a jour avec succès";
+            }
 
             $manager =  $doctrine->getManager();
             $manager->persist($personne);
 
             $manager->flush();
             //Afficher un message de succès
-            if ($new){
-                $message="a été ajouté avec succès";
-            }else{
-                $message="a été mis a jour avec succès";
-            }
+
 //            $mailMessage = $personne->getFirstname().' '.$personne->getName().' '.$message;
             $this->addFlash('success',$personne->getName(). $message);
 //            $mailer->sendEmail(content: $mailMessage);
@@ -149,7 +159,10 @@ class PersonneController extends AbstractController
 
     }
     
-    #[Route('/delete/{id}',name: 'personne.delete')]
+    #[
+        Route('/delete/{id}',name: 'personne.delete'),
+        IsGranted('ROLE_ADMIN')
+        ]
     public function deletePersonne(Personne $personne=null , ManagerRegistry $doctrine): RedirectResponse{
             //Recuperer la personne
         if ($personne){
