@@ -21,7 +21,12 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
+    App\EventListener\PersonneListener:
+        tags:
+            - { name: kernel.event_listener, event: personne.add }
+ #          - { name: kernel.event_listener, event: kernel.request, method: logKernelRequest ,priority: -2000 }
+            - { name: kernel.event_listener, event: personne.list.alls, method: onListAllPersonnes  }
+            - { name: kernel.event_listener, event: personne.list.alls, method: onListAllPersonnes2 , priority: 100 }
     # add more Service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
